@@ -14,11 +14,11 @@
  * and at least one model — are required here rather than at load, so the
  * failure names the field while the user is still looking at it.
  *
- * There is deliberately no reasoning-effort control, here or on the editor
- * card: effort is a per-MODEL capability, and the models under one provider
- * disagree about it, so a provider-scoped control can only be set to a value
- * some of them reject. The composer's model picker offers each model its own
- * levels instead.
+   * There is deliberately no provider-scoped reasoning-effort control: effort is
+   * a per-MODEL capability, and the models under one provider disagree about it.
+   * Each row names the levels it offers, one canonical id per line; the map
+   * written there uses that protocol's wire spellings so the composer can show
+   * those levels.
  */
 
 import { useState } from 'react'
@@ -31,6 +31,7 @@ import { ModelListEditor } from './ModelListEditor.tsx'
 import type { ModelDraft } from './ModelListEditor.tsx'
 import { deriveKeyRef } from './store.ts'
 import type { ModelsOperations } from './operations.ts'
+import { protocolOptionLabel, remapModelsReasoning } from './protocol.ts'
 import type { en } from './locales.ts'
 import styles from './ModelsSection.module.css'
 
@@ -234,13 +235,19 @@ export function CustomProviderCard(props: CustomProviderCardProps): ReactNode {
       <div className={styles['field']}>
         <span className={styles['fieldLabel']}>{t('customApi')}</span>
         <select
-          className={`${styles['input']} ${styles['selectInput']}`}
+          className={`${styles['input']} ${styles['selectInput']} ${styles['protocolSelect']}`}
           value={protocol}
           aria-label={t('customApi')}
           disabled={profileDisabled}
-          onChange={(event) => { setProtocol(event.target.value) }}
+          onChange={(event) => {
+            const next = event.target.value
+            setProtocol(next)
+            setModels(current => remapModelsReasoning(current, next))
+          }}
         >
-          {protocols.map(choice => <option key={choice} value={choice}>{choice}</option>)}
+          {protocols.map(choice => (
+            <option key={choice} value={choice}>{protocolOptionLabel(choice)}</option>
+          ))}
         </select>
       </div>
       <div className={styles['field']}>
@@ -265,6 +272,7 @@ export function CustomProviderCard(props: CustomProviderCardProps): ReactNode {
       <ModelListEditor
         models={models}
         onChange={setModels}
+        protocol={protocol}
         probe={{
           settingsNs: NS,
           baseURL,

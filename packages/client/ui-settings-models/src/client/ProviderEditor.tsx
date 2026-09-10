@@ -11,14 +11,14 @@
  * display name and wire protocol of a pi-ai route the adapter does not ship —
  * the two fields the create card asked that route for, editable here for the
  * same reason).
- * Reasoning effort is deliberately absent: it is a per-MODEL capability, and
- * the models under one provider disagree about it, so a provider-scoped
- * control can only be set to a value some of them reject. The composer's
- * model picker offers each model its own levels; `settings.yaml` keeps the
- * profile field for a deployment that knows its route. Everything else stays
- * owned by `settings.yaml`. Profile edits land as minimal `settings.mutate`
- * path ops against the stored section — the card names only the fields it can
- * see instead of rebuilding the whole subtree from a partial descriptor.
+ * Provider-scoped reasoning effort is deliberately absent: it is a per-MODEL
+ * capability, and the models under one provider disagree about it. Each
+ * customized model row names the levels it offers, one canonical id per line,
+ * written as a protocol-specific map so the composer can show those levels.
+ * Everything else stays owned by
+ * `settings.yaml`. Profile edits land as minimal `settings.mutate` path ops
+ * against the stored section — the card names only the fields it can see
+ * instead of rebuilding the whole subtree from a partial descriptor.
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -33,6 +33,8 @@ import {
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
 import { ModelListEditor } from './ModelListEditor.tsx'
+import type { ModelDraft } from './ModelListEditor.tsx'
+import { protocolOptionLabel, remapModelsReasoning } from './protocol.ts'
 import { deriveKeyRef, protocolChoices } from './store.ts'
 import type { ModelsOperations } from './operations.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
@@ -430,11 +432,26 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
                 <div className={styles['field']}>
                   <span className={styles['fieldLabel']}>{t('customApi')}</span>
                   <select
-                    className={`${styles['input']} ${styles['selectInput']}`}
+                    className={`${styles['input']} ${styles['selectInput']} ${styles['protocolSelect']}`}
                     value={probeApi ?? ''}
                     aria-label={t('customApi')}
                     disabled={disabled}
-                    onChange={(event) => { setField('api', event.target.value) }}
+                    onChange={(event) => {
+                      const next = event.target.value
+                      setDraft((current) => {
+                        const withApi = next.trim().length === 0
+                          ? schema.deletePath(current, ['api'])
+                          : schema.setPath(current, ['api'], next)
+                        if (!schema.hasPath(withApi, ['models'])) return withApi
+                        const listed = schema.getPath(withApi, ['models'])
+                        if (!Array.isArray(listed)) return withApi
+                        return schema.setPath(
+                          withApi,
+                          ['models'],
+                          remapModelsReasoning(listed as ModelDraft[], next),
+                        )
+                      })
+                    }}
                   >
                     {/* A profile naming no protocol — hand-written into
                         settings.yaml with no model to need one — selects
@@ -443,7 +460,9 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
                         reader announces it either way, and an empty one is
                         announced as a choice with no identity. */}
                     {probeApi === undefined ? <option value="">{t('customApiUnset')}</option> : null}
-                    {protocols.map(choice => <option key={choice} value={choice}>{choice}</option>)}
+                    {protocols.map(choice => (
+                      <option key={choice} value={choice}>{protocolOptionLabel(choice)}</option>
+                    ))}
                   </select>
                 </div>
               )
@@ -464,6 +483,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
               : (
                 <ModelListEditor
                   {...catalogProps}
+                  protocol={probeApi ?? ''}
                   probe={probe}
                   probeBlocked={keyFailure}
                   operations={operations}

@@ -23,8 +23,24 @@ import {
   IconDataOutline16, IconWarningOutline16, Toast,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
+import type { ModelKey } from './locales.ts'
 import type { ModelSelectInjected } from './slots.ts'
 import css from './ModelSelect.module.css'
+
+/** Canonical Host effort ids whose labels this package owns. */
+const CANONICAL_EFFORTS = new Set(['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'])
+
+/**
+ * Localized name for a Host-described effort. Catalog adapters currently
+ * capitalize the English id (Off/Low/High); known levels are rewritten here
+ * so a Chinese UI can show 高/中/低. An unknown id keeps the Host name.
+ */
+function effortDisplayName(
+  t: PropsLocale<'model'>['t'],
+  effort: ModelReasoningEffort,
+): string {
+  return CANONICAL_EFFORTS.has(effort.id) ? t(`effort.${effort.id}` as ModelKey) : effort.name
+}
 
 /** Which pane the dropdown shows: the two-row root or one drilled-in list. */
 type Pane = 'root' | 'model' | 'effort'
@@ -91,7 +107,10 @@ export function ModelSelect(
     ? undefined
     : effectiveEffort === undefined
       ? t('effort.providerDefault')
-      : reasoning.efforts.find(level => level.id === effectiveEffort)?.name ?? effectiveEffort
+      : (() => {
+        const selected = reasoning.efforts.find(level => level.id === effectiveEffort)
+        return selected === undefined ? effectiveEffort : effortDisplayName(t, selected)
+      })()
   const effortChoices = useMemo<readonly EffortChoice[]>(() => reasoning === undefined
     ? []
     : [
@@ -101,7 +120,7 @@ export function ModelSelect(
       ...reasoning.efforts.map((effort: ModelReasoningEffort) => ({
         key: `effort:${effort.id}`,
         effort: effort.id,
-        label: effort.name,
+        label: effortDisplayName(t, effort),
       })),
     ], [reasoning, t])
   const busy = state.status === 'selecting'

@@ -86,3 +86,13 @@ minimumReleaseAgeExclude:
 patchedDependencies:
   '@yao-pkg/pkg@6.21.0': patches/@yao-pkg__pkg@6.21.0.patch
   node-pty@1.2.0-beta.15: patches/node-pty@1.2.0-beta.15.patch
+
+# pnpm ≥11 keeps registry/auth in .npmrc; these are pnpm-owned install settings.
+registries:
+  default: https://registry.npmmirror.com
+gitShallowHosts:
+  - github.com
+  - gitlab.com
+fetchRetries: 5
+fetchRetryMintimeout: 20000
+fetchRetryMaxtimeout: 120000

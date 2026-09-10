@@ -22,6 +22,9 @@ import { formatCapacity, parseCapacity } from './DeepSeekModelsEditor.tsx'
 import type { ModelsOperations } from './operations.ts'
 import type { DeepSeekModelDraft } from './DeepSeekModelsEditor.tsx'
 import type { en } from './locales.ts'
+import {
+  applyImageInput, applyReasoningLevels, modelAcceptsImages, reasoningLevelsText,
+} from './protocol.ts'
 import styles from './ModelsSection.module.css'
 
 /**
@@ -70,6 +73,12 @@ export interface ModelListEditorProps {
   onChange: (models: ModelDraft[]) => void
   /** Remove the user-owned array and return to inheritance; absent on a create. */
   onReset?: () => void
+  /**
+   * Wire protocol the enclosing card currently names. Image input does not
+   * depend on it; thinking-level wire spellings do, so the levels field is
+   * offered only once a protocol is chosen.
+   */
+  protocol?: string
   /** Endpoint facts for the fetch action. */
   probe: ProbeTarget
   /**
@@ -158,6 +167,7 @@ function adopt(candidate: LlmDiscoveredModel): ModelDraft {
  */
 export function ModelListEditor(props: ModelListEditorProps): ReactNode {
   const { models, onChange, probe, operations, t, disabled } = props
+  const protocol = props.protocol ?? ''
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<string | undefined>(undefined)
   const [candidates, setCandidates] = useState<readonly LlmDiscoveredModel[] | undefined>(undefined)
@@ -173,6 +183,11 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
   // FIELD: a single buffer would be displaced by editing any other field, and
   // the abandoned one would render its stored NaN as the literal `NaN`.
   const [editing, setEditing] = useState<ReadonlyMap<string, string>>(new Map())
+  // Thinking levels are the same problem in a different shape: the stored map
+  // is canonical ids, but the field is free text (one id per line). Holding
+  // keystrokes here keeps a half-typed `l` from vanishing, and a trailing
+  // newline from being stripped on every change.
+  const [reasoningDrafts, setReasoningDrafts] = useState<ReadonlyMap<number, string>>(new Map())
 
   /** Buffer key for one capacity field; the row half moves when rows do. */
   const bufferKey = (index: number, field: CapacityField): string => `${String(index)}:${field}`
@@ -399,6 +414,14 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
                   return next
                 })
                 setEditing(current => reindexOnRemove(current, index))
+                setReasoningDrafts((current) => {
+                  const next = new Map<number, string>()
+                  for (const [at, value] of current) {
+                    if (at === index) continue
+                    next.set(at > index ? at - 1 : at, value)
+                  }
+                  return next
+                })
               }}
             >
               <IconTrash />
@@ -432,6 +455,45 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
                     disabled={disabled}
                     onChange={(event) => { editCapacity(index, 'maxTokens', event.target.value) }}
                   />
+                </label>
+                <div className={styles['modelToggles']}>
+                  <label className={styles['modelToggle']}>
+                    <input
+                      type="checkbox"
+                      checked={modelAcceptsImages(model)}
+                      aria-label={`${t('modelSupportsImages')} ${index + 1}`}
+                      disabled={disabled}
+                      onChange={(event) => {
+                        onChange(models.map((row, at) =>
+                          at === index ? applyImageInput(row, event.target.checked) : row))
+                      }}
+                    />
+                    <span>{t('modelSupportsImages')}</span>
+                  </label>
+                </div>
+                <label className={`${styles['modelField']} ${styles['modelReasoningField']}`}>
+                  <span className={styles['modelFieldLabel']}>{t('modelReasoningLevels')}</span>
+                  <textarea
+                    className={`${styles['input']} ${styles['modelReasoningInput']}`}
+                    value={reasoningDrafts.get(index) ?? reasoningLevelsText(model)}
+                    placeholder={t('modelReasoningLevelsPlaceholder')}
+                    aria-label={`${t('modelReasoningLevels')} ${index + 1}`}
+                    aria-describedby={`model-reasoning-hint-${String(index)}`}
+                    disabled={disabled || protocol.length === 0}
+                    rows={4}
+                    spellCheck={false}
+                    onChange={(event) => {
+                      const text = event.target.value
+                      setReasoningDrafts(current => new Map(current).set(index, text))
+                      onChange(models.map((row, at) =>
+                        at === index
+                          ? applyReasoningLevels(row, protocol, text)
+                          : row))
+                    }}
+                  />
+                  <span id={`model-reasoning-hint-${String(index)}`} className={styles['modelReasoningHint']}>
+                    {t('modelReasoningLevelsHint')}
+                  </span>
                 </label>
               </div>
             )

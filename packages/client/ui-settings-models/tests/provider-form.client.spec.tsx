@@ -11,6 +11,7 @@ import type { ModelsSectionInjected, ModelsSectionProps } from '../src/client/Mo
 import { CustomProviderCard } from '../src/client/CustomProviderCard.tsx'
 import { formatCapacity, parseCapacity } from '../src/client/DeepSeekModelsEditor.tsx'
 import { SettingsDescribeMirror } from '@deepseek-ai/dsh-client-ui-settings/src/client/settings-mirror.ts'
+import { protocolOptionLabel } from '../src/client/protocol.ts'
 import { ModelsSettingsStore, deriveKeyRef, protocolChoices } from '../src/client/store.ts'
 import { createModelsOperations } from '../src/client/operations.ts'
 import type { ModelsOperations } from '../src/client/operations.ts'
@@ -36,6 +37,12 @@ const PiAiConfig = Schema.object({
       name: Schema.string(),
       contextWindow: Schema.number(),
       maxTokens: Schema.number(),
+      input: Schema.array(Schema.union(['text', 'image'] as const)),
+      reasoningEfforts: Schema.union([
+        Schema.const(false),
+        Schema.dict(Schema.union([Schema.string(), Schema.const(null)])),
+      ]),
+      compat: Schema.object({ forceAdaptiveThinking: Schema.boolean() }),
     })),
     reasoning: Schema.union(['off', 'high']),
   })),
@@ -847,6 +854,15 @@ describe('hand-declared providers', () => {
     expect(fields()).toEqual([en.keyInput, en.customDisplayName, en.baseUrl, en.customApi])
   })
 
+  it('labels each protocol with its request-path suffix', () => {
+    mountCard()
+    expect([...screen.getByLabelText<HTMLSelectElement>(en.customApi).options]
+      .filter(option => option.value.length > 0)
+      .map(option => option.textContent))
+      .toEqual(PROTOCOLS.map(protocolOptionLabel))
+    expect(protocolOptionLabel('openai-responses')).toBe('openai-responses (/v1)')
+  })
+
   it('renames a declared route and falls back to its id when the name is cleared', async () => {
     const { mutate } = await mountSection({
       providers: {
@@ -957,6 +973,78 @@ describe('hand-declared providers', () => {
     expect(firstMutate(mutate)).toEqual({
       ns: 'llm-pi-ai',
       ops: [{ op: 'set', path: ['providers', 'acme-gateway', 'api'], value: 'anthropic-messages' }],
+      expectedRevision: 3,
+    })
+  })
+
+  it('writes image input and reasoning onto an edited declared model', async () => {
+    const { mutate } = await mountSection({
+      providers: {
+        'acme-gateway': {
+          api: 'openai-completions',
+          baseURL: 'https://gateway.acme.example/v1',
+          models: [{ id: 'acme-large' }],
+        },
+      },
+      declaredRoutes: ['acme-gateway'],
+    })
+    openEditor('acme-gateway')
+    expandModel(1)
+    fireEvent.click(screen.getByLabelText(`${en.modelSupportsImages} 1`))
+    fireEvent.change(screen.getByLabelText(`${en.modelReasoningLevels} 1`), {
+      target: { value: 'low\nmedium\nhigh' },
+    })
+    fireEvent.click(screen.getByText(en.apply))
+
+    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
+    expect(firstMutate(mutate)).toEqual({
+      ns: 'llm-pi-ai',
+      ops: [{
+        op: 'set',
+        path: ['providers', 'acme-gateway', 'models'],
+        value: [{
+          id: 'acme-large',
+          input: ['text', 'image'],
+          reasoningEfforts: { low: 'low', medium: 'medium', high: 'high' },
+        }],
+      }],
+      expectedRevision: 3,
+    })
+  })
+
+  it('rewrites stored reasoning maps when a declared route changes protocol', async () => {
+    const { mutate } = await mountSection({
+      providers: {
+        'acme-gateway': {
+          api: 'openai-completions',
+          baseURL: 'https://gateway.acme.example/v1',
+          models: [{
+            id: 'acme-large',
+            reasoningEfforts: { off: null, low: 'low', medium: 'medium', high: 'high' },
+          }],
+        },
+      },
+      declaredRoutes: ['acme-gateway'],
+    })
+    openEditor('acme-gateway')
+    const protocol = screen.getByLabelText<HTMLSelectElement>(en.customApi)
+    fireEvent.change(protocol, { target: { value: 'openai-responses' } })
+    fireEvent.click(screen.getByText(en.apply))
+
+    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
+    expect(firstMutate(mutate)).toEqual({
+      ns: 'llm-pi-ai',
+      ops: [
+        { op: 'set', path: ['providers', 'acme-gateway', 'api'], value: 'openai-responses' },
+        {
+          op: 'set',
+          path: ['providers', 'acme-gateway', 'models'],
+          value: [{
+            id: 'acme-large',
+            reasoningEfforts: { off: 'none', low: 'low', medium: 'medium', high: 'high' },
+          }],
+        },
+      ],
       expectedRevision: 3,
     })
   })
@@ -1258,6 +1346,83 @@ describe('hand-declared providers', () => {
       api: 'anthropic-messages',
       baseURL: 'https://acme.test/v1',
       models: [{ id: 'm' }],
+    })
+  })
+
+  it('stores image input and protocol-specific reasoning when a model opts in', async () => {
+    const { mutate, onClose } = mountCard()
+
+    fireEvent.change(screen.getByLabelText(en.customRoute), { target: { value: 'acme' } })
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://acme.test/v1' } })
+    fireEvent.change(screen.getByLabelText(en.customApi), { target: { value: 'openai-responses' } })
+    fireEvent.click(screen.getByRole('button', { name: en.addModel }))
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'vision-think' } })
+    expandModel(1)
+    fireEvent.click(screen.getByLabelText(`${en.modelSupportsImages} 1`))
+    fireEvent.change(screen.getByLabelText(`${en.modelReasoningLevels} 1`), {
+      target: { value: 'low\nmedium\nhigh' },
+    })
+    fireEvent.click(screen.getByText(en.create))
+
+    await waitFor(() => { expect(onClose).toHaveBeenCalledWith(true) })
+    expect(firstMutate(mutate).ops[0]?.value).toEqual({
+      api: 'openai-responses',
+      baseURL: 'https://acme.test/v1',
+      models: [{
+        id: 'vision-think',
+        input: ['text', 'image'],
+        reasoningEfforts: { low: 'low', medium: 'medium', high: 'high' },
+      }],
+    })
+  })
+
+  it('rewrites reasoning maps when the protocol changes', async () => {
+    const { mutate, onClose } = mountCard()
+
+    fireEvent.change(screen.getByLabelText(en.customRoute), { target: { value: 'acme' } })
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://acme.test/v1' } })
+    fireEvent.click(screen.getByRole('button', { name: en.addModel }))
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'thinker' } })
+    expandModel(1)
+    fireEvent.change(screen.getByLabelText(`${en.modelReasoningLevels} 1`), {
+      target: { value: 'low\nmedium\nhigh' },
+    })
+    fireEvent.change(screen.getByLabelText(en.customApi), { target: { value: 'anthropic-messages' } })
+    fireEvent.click(screen.getByText(en.create))
+
+    await waitFor(() => { expect(onClose).toHaveBeenCalledWith(true) })
+    expect(firstMutate(mutate).ops[0]?.value).toEqual({
+      api: 'anthropic-messages',
+      baseURL: 'https://acme.test/v1',
+      models: [{
+        id: 'thinker',
+        reasoningEfforts: { low: 'low', medium: 'medium', high: 'high' },
+        compat: { forceAdaptiveThinking: true },
+      }],
+    })
+  })
+
+  it('stores only the thinking levels the user typed, including xhigh and max', async () => {
+    const { mutate, onClose } = mountCard()
+
+    fireEvent.change(screen.getByLabelText(en.customRoute), { target: { value: 'acme' } })
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://acme.test/v1' } })
+    fireEvent.click(screen.getByRole('button', { name: en.addModel }))
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'thinker' } })
+    expandModel(1)
+    fireEvent.change(screen.getByLabelText(`${en.modelReasoningLevels} 1`), {
+      target: { value: 'low\nmedium\nhigh\nxhigh\nmax' },
+    })
+    fireEvent.click(screen.getByText(en.create))
+
+    await waitFor(() => { expect(onClose).toHaveBeenCalledWith(true) })
+    expect(firstMutate(mutate).ops[0]?.value).toEqual({
+      api: 'openai-completions',
+      baseURL: 'https://acme.test/v1',
+      models: [{
+        id: 'thinker',
+        reasoningEfforts: { low: 'low', medium: 'medium', high: 'high', xhigh: 'xhigh', max: 'max' },
+      }],
     })
   })
 
