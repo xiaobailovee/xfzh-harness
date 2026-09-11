@@ -29,7 +29,7 @@ export type { SessionLogDownloadEntry, SessionLogDownloadState } from './control
 export const inject = ['slots', 'locale']
 
 /**
- * Provide the download controller and mount its modal into the Session Header.
+ * Provide the download controller and mount the `/export` result dialog.
  * @param ctx - browser context carrying slots and locale services.
  */
 export function apply(ctx: ClientContext): void {

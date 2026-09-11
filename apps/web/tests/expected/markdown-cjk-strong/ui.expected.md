@@ -1,9 +1,6 @@
 - banner:
   - navigation "Session hierarchy":
     - button "CJK strong emphasis" [disabled]
-  - button "Session log":
-    - text: Session log
-    - img
   - button "Open the sidebar":
     - img
   - tablist:

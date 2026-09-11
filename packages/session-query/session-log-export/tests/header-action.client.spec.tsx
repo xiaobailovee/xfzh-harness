@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { cleanup, render, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useSyncExternalStore } from 'react'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
@@ -19,8 +19,7 @@ function bindSessionExport(controller: SessionLogDownloadController) {
   }
 }
 
-function bench() {
-  const controller = new SessionLogDownloadController(async () => new Response('zip'), vi.fn())
+function bench(controller = new SessionLogDownloadController(async () => new Response('zip'), vi.fn())) {
   const request = vi.fn((sessionId: SessionId) => controller.download(sessionId))
   const dismiss = vi.fn((sessionId: SessionId) => { controller.dismiss(sessionId) })
   const useSessionLogDownload = bindSessionExport(controller)
@@ -38,35 +37,33 @@ function bench() {
 afterEach(cleanup)
 
 describe('Session export Header action', () => {
-  it('renders the 111×32 text capsule and downloads through the shared controller', async () => {
+  it('does not render a Session-log capsule in the header', () => {
     const b = bench()
-    const button = b.view.getByRole('button', { name: 'Session log' })
-    expect(button.querySelector('svg')).not.toBeNull()
-    fireEvent.click(button)
-    await waitFor(() => { expect(b.request).toHaveBeenCalledWith(SID) })
-    expect(await b.view.findByRole('dialog', { name: 'Session download started' })).toBeTruthy()
+    expect(b.view.queryByRole('button', { name: 'Session log' })).toBeNull()
   })
 
-  it('disables the capsule while either entry path downloads this Session', async () => {
+  it('opens the shared dialog when /export downloads this Session', async () => {
     const b = bench()
+    await b.controller.download(SID)
+    expect(await b.view.findByRole('dialog', { name: 'Session download started' })).toBeTruthy()
+    expect(b.view.queryByRole('button', { name: 'Session log' })).toBeNull()
+  })
+
+  it('stays silent in the header while a download is in flight', async () => {
     let release!: (response: Response) => void
     const pending = new Promise<Response>((resolve) => { release = resolve })
     const controller = new SessionLogDownloadController(() => pending, vi.fn())
-    const useSessionLogDownload = bindSessionExport(controller)
-    b.view.rerender(<SessionLogDownloadHeaderAction {...({
-      sessionId: SID,
-      useSessionLogDownload,
-      request: (sessionId: SessionId) => controller.download(sessionId),
-      dismiss: (sessionId: SessionId) => { controller.dismiss(sessionId) },
-      t: (key: keyof typeof en): string => en[key],
-    } as unknown as SessionLogDownloadDialogProps)} />)
+    const b = bench(controller)
 
     const download = controller.download(SID)
-    const button = b.view.getByRole('button', { name: 'Session log' })
-    await waitFor(() => { expect(button.getAttribute('aria-busy')).toBe('true') })
-    expect((button as HTMLButtonElement).disabled).toBe(true)
+    await waitFor(() => {
+      expect(b.view.queryByRole('button', { name: 'Session log' })).toBeNull()
+      expect(b.view.getByRole('dialog', { name: 'Exporting Session' })).toBeTruthy()
+    })
     release(new Response('zip'))
     await download
-    await waitFor(() => { expect(button.getAttribute('aria-busy')).toBe('false') })
+    await waitFor(() => {
+      expect(b.view.getByRole('dialog', { name: 'Session download started' })).toBeTruthy()
+    })
   })
 })

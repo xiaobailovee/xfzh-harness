@@ -4,7 +4,11 @@
   flex-direction: column;
   height: 100%;
   min-width: 0;
-  background: var(--dsw-alias-bg-base);
+  background-color: var(--dsw-alias-bg-base);
+  background-image: var(--xfzh-sticker-app, none), var(--xfzh-bg-image, none);
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 24px bottom 72px, center top;
+  background-size: 168px, cover;
 
   /* Shared width axis for the whole column: one content width W
      (--dsh-chat-content-width) for the transcript, the dock cards

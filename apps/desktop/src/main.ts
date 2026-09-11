@@ -19,6 +19,7 @@ import { DESKTOP_IPC, type DesktopUpdateState } from './ipc.ts'
 import { formatDesktopMessage, resolveDesktopLocale } from './locale.ts'
 import { claimDesktopSingleInstance } from './single-instance.ts'
 import { DesktopUpdateCoordinator } from './update-coordinator.ts'
+import { customCaptionWindowOptions, titleBarOverlayOptions } from './window-chrome.ts'
 
 const SCHEME = 'dsh-app'
 let focusPrimaryWindow = (): void => {}
@@ -79,13 +80,14 @@ function developmentHostInspectPort(enabled: boolean): number | undefined {
   return port
 }
 
-function createWindow(preload: string): BrowserWindow {
+function createWindow(preload: string, caption: 'native' | 'custom' = 'native'): BrowserWindow {
   const window = new BrowserWindow({
     width: 1280,
     height: 840,
     minWidth: 880,
     minHeight: 600,
     show: false,
+    ...caption === 'custom' ? customCaptionWindowOptions() : {},
     webPreferences: {
       preload,
       nodeIntegration: false,
@@ -269,7 +271,13 @@ async function main(): Promise<void> {
     assertDesktopSender(event, ['shell'])
     await updates.install()
   })
-
+  ipcMain.handle(DESKTOP_IPC.titleBarOverlay, (event, masked: unknown) => {
+    assertDesktopSender(event, ['app'])
+    if (typeof masked !== 'boolean') throw new Error('dsh desktop: title bar overlay mask must be a boolean')
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (window === null || window.isDestroyed()) return
+    window.setTitleBarOverlay(titleBarOverlayOptions(masked))
+  })
   const checkAndPrompt = async (manual: boolean): Promise<void> => {
     const state = await updates.check()
     if (state.phase === 'error') {
@@ -325,7 +333,7 @@ async function main(): Promise<void> {
     void pluginWindow.loadURL(`${SCHEME}://shell/plugin-manager.html`)
   }
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate([{
+  const applicationMenu = Menu.buildFromTemplate([{
     label: process.platform === 'darwin' ? app.name : messages.application,
     submenu: [
       {
@@ -338,10 +346,11 @@ async function main(): Promise<void> {
       { type: 'separator' },
       { role: 'quit' },
     ],
-  }]))
+  }])
+  Menu.setApplicationMenu(applicationMenu)
 
   const createMainWindow = (): BrowserWindow => {
-    const window = createWindow(appPreload)
+    const window = createWindow(appPreload, 'custom')
     mainWindow = window
     window.once('ready-to-show', () => { if (!window.isDestroyed()) window.show() })
     window.on('closed', () => { if (mainWindow === window) mainWindow = undefined })

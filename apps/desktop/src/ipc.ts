@@ -13,6 +13,7 @@ export const DESKTOP_IPC = {
   updatesCheck: 'dsh-desktop:updates-check',
   updatesInstall: 'dsh-desktop:updates-install',
   updatesState: 'dsh-desktop:updates-state',
+  titleBarOverlay: 'dsh-desktop:titlebar-overlay',
 } as const
 
 /** Desktop release update state rendered by desktop-owned UI. */

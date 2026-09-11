@@ -271,45 +271,10 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
     await details.getByRole('button', { name: 'Close details' }).click()
   }, 60_000)
 
-  it.skipIf(MODE === 'record')('downloads through the Session Header and /export with one dialog', async () => {
+  it.skipIf(MODE === 'record')('downloads through /export with one dialog', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-navigation-export'))
     await ensureSeedOpen(page)
-    const exportButton = page.getByRole('button', { name: 'Session log' })
-    expect(await exportButton.isDisabled()).toBe(false)
-    const header = exportButton.locator('xpath=ancestor::header[1]')
-    // The right Sidebar's expand button holds the header's corner; the export
-    // control sits immediately to its left.
-    const sidebarButton = page.getByRole('button', { name: 'Open the sidebar' })
-    const [buttonBox, sidebarBox, headerBox] = await Promise.all([
-      exportButton.boundingBox(), sidebarButton.boundingBox(), header.boundingBox(),
-    ])
-    if (buttonBox === null || sidebarBox === null || headerBox === null) {
-      throw new Error('Session Header export geometry is unavailable')
-    }
-    expect(headerBox.x + headerBox.width - (sidebarBox.x + sidebarBox.width)).toBeLessThanOrEqual(32)
-    expect(sidebarBox.x - (buttonBox.x + buttonBox.width)).toBeLessThanOrEqual(32)
-    const responsePromise = page.waitForResponse(response =>
-      response.request().method() === 'HEAD'
-      && new URL(response.url()).pathname === '/api/session.export', { timeout: 30_000 })
-    const downloadPromise = page.waitForEvent('download', { timeout: 30_000 })
-    await exportButton.click()
-    const response = await responsePromise
-    expect(response.status()).toBe(200)
-    const download = await downloadPromise
-    expect(download.suggestedFilename()).toMatch(/^dsh-session-.+\.zip$/)
-    const dialog = page.getByRole('dialog', { name: 'Session download started' })
-    await dialog.waitFor({ timeout: 30_000 })
-    // The real host streamed the ZIP; its root entry is the persisted log
-    // text verbatim (the assembled seam: real route, real persistence read).
-    const files = unzipSync(await readFile(await download.path()))
-    expect(Object.keys(files)).toEqual([EXPORTED_LOG_FILE])
-    const content = strFromU8(files[EXPORTED_LOG_FILE] as Uint8Array)
-    expect(JSON.parse(content.split('\n')[0] ?? '')).toMatchObject({
-      type: 'session', version: SESSION_FORMAT_VERSION,
-    })
-    expect(content.split('\n')[0]).toContain(SEED_ID)
-    expect(content).toContain('FIRST_DONE')
-    await dialog.getByText('Close', { exact: true }).click()
+    expect(await page.getByRole('button', { name: 'Session log' }).count()).toBe(0)
 
     const observer = await newEnglishPage(browser)
     const observerTripwire = watchConsole(observer)
@@ -337,13 +302,14 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
       await page.getByRole('option', { name: /export/u }).waitFor({ timeout: 10_000 })
       await input.press('Enter')
       const slashDownload = await slashDownloadPromise
-      expect(slashDownload.suggestedFilename()).toBe(download.suggestedFilename())
+      expect(slashDownload.suggestedFilename()).toMatch(/^dsh-session-.+\.zip$/)
       const slashFiles = unzipSync(await readFile(await slashDownload.path()))
       expect(Object.keys(slashFiles)).toEqual([EXPORTED_LOG_FILE])
       const slashContent = strFromU8(slashFiles[EXPORTED_LOG_FILE] as Uint8Array)
       expect(JSON.parse(slashContent.split('\n')[0] ?? '')).toMatchObject({
         type: 'session', version: SESSION_FORMAT_VERSION,
       })
+      expect(slashContent.split('\n')[0]).toContain(SEED_ID)
       const slashEvents = parseSessionLog(slashContent)
       const exportRun = slashEvents.findLast(event => event.type === 'command/run' && event.data.name === 'export')
       if (exportRun?.type !== 'command/run') throw new Error('slash ZIP has no export command/run')

@@ -24,9 +24,10 @@
   /* Figma's 525px cap held as a share of the width axis (525/748 ≈ 0.702) so
      the bubble widens with a user-dragged or adaptive column; percentage
      keeps narrow windows sane. */
+  position: relative;
   max-width: 100%;
   background: var(--dsw-specific-bubble);
-  border-radius: 22px;
+  border-radius: var(--dsw-radius-bubble, 22px);
   /* 42px single-line bubble at the default size: 22 line + 10 vertical
      padding each side; the Settings font-size preference moves size and line
      height together through the body-published axis. */
@@ -38,6 +39,17 @@
      decorated single-line message stays one line. */
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.bubble::after {
+  content: var(--xfzh-sticker-bubble, none);
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  width: 12px;
+  height: 12px;
+  background: no-repeat center / contain;
+  pointer-events: none;
 }
 
 .referenceSummary {

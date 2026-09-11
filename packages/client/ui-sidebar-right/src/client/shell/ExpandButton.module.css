@@ -1,6 +1,6 @@
 /*
- * Sits in the conversation header's corner seat, level with the Session log
- * control, so it takes that row's 32px height and the same hover fill; square
+ * Sits in the conversation header's corner seat, level with the title row
+ * controls, so it takes that row's 32px height and the same hover fill; square
  * with the header's corner radius rather than a pill, because it is an icon
  * button, not a labelled one. The placeholder is the same box with nothing in
  * it, so the seat's width holds while the panel is shown.

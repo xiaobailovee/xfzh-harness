@@ -29,7 +29,7 @@
   padding: 0 0 24px;
   overflow: hidden;
   border: 0;
-  border-radius: 24px;
+  border-radius: var(--dsw-radius-xl, 24px);
   background: var(--dsw-alias-bg-layer-2);
   box-shadow: var(--dsw-elevation-prominent);
 }
@@ -43,11 +43,22 @@
 /* Header row (figma Title row): pad l24/t22/r14/b12, SPACE_BETWEEN —
  * title left, close button right. */
 .header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding: 22px 14px 12px 24px;
+}
+
+.header::before {
+  content: var(--xfzh-sticker-modal, none);
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 
 .title {
@@ -66,7 +77,7 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--dsw-radius-xs, 8px);
   background: transparent;
   cursor: pointer;
   color: var(--dsw-alias-label-secondary);

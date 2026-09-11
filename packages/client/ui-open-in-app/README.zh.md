@@ -49,7 +49,7 @@ kind: "package-reference"
 ## 进一步探索
 
 - [dsh-host-open-in-app](../../host/open-in-app/README.zh.md)——提供可用性、图标与启动的主机路由，及其背后的目录。
-- [dsh-session-log-export](../../session-query/session-log-export/README.zh.md)——会话头部的姊妹动作。
+- [dsh-session-log-export](../../session-query/session-log-export/README.zh.md)——会话导出的姊妹能力（`/export`）。
 - [Web client 架构](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——浏览器插件行如何加载并注册 slot。
 
 -----

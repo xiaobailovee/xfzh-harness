@@ -71,11 +71,12 @@ export function ConversationSessionHeader({
   return (
     <header
       className={clsx(css.header, hideChrome && css.headerHidden)}
+      data-conversation-header=""
       aria-hidden={hideChrome || undefined}
     >
       {!hideChrome && (
         <>
-          <div className={css.titleRow}>
+          <div className={css.titleRow} data-conversation-header-title="">
             <div className={css.titleCluster}>
               <nav className={css.crumbs} aria-label={t('session.hierarchy')}>
                 {ancestry.map((summary, index) => {

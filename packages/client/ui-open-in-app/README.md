@@ -49,7 +49,7 @@ The plugin registers the split button on `conversation.session.header.utilities`
 ## Further Exploration
 
 - [dsh-host-open-in-app](../../host/open-in-app/README.md) — the host routes serving availability, icons, and launches, and the catalog behind them.
-- [dsh-session-log-export](../../session-query/session-log-export/README.md) — the sibling Session-header action.
+- [dsh-session-log-export](../../session-query/session-log-export/README.md) — the sibling Session export (`/export`).
 - [Web client architecture](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.md) — how browser plugin rows load and register slots.
 
 -----

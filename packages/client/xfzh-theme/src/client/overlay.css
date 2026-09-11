@@ -1,0 +1,108 @@
+/**
+ * Sakura-letter overlay: radius tokens, corner-shape, wash wallpaper, and
+ * sticker urls. Official sheets do not define these names; components read
+ * them with official-value fallbacks so this plugin is the only writer.
+ */
+body {
+  --dsw-radius-xs: 10px;
+  --dsw-radius-sm: 14px;
+  --dsw-radius-md: 16px;
+  --dsw-radius-lg: 22px;
+  --dsw-radius-xl: 28px;
+  --dsw-radius-composer: 28px;
+  --dsw-radius-bubble: 20px;
+  --xfzh-bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' fill='none'%3E%3Ccircle cx='70' cy='30' r='110' fill='%23FFD6E0' fill-opacity='0.42'/%3E%3Ccircle cx='350' cy='70' r='120' fill='%23FFE4EA' fill-opacity='0.4'/%3E%3Ccircle cx='210' cy='290' r='100' fill='%23FAC4D2' fill-opacity='0.22'/%3E%3C/svg%3E");
+  --xfzh-sticker-app: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cg fill='%23D96B8A' fill-opacity='0.42'%3E%3Cellipse cx='32' cy='14' rx='8' ry='11'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(72 32 32)'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(144 32 32)'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(216 32 32)'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(288 32 32)'/%3E%3Ccircle cx='32' cy='32' r='5'/%3E%3C/g%3E%3C/svg%3E");
+  --xfzh-sticker-sidebar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 48' fill='none'%3E%3Cpath fill='%23F2A7B8' fill-opacity='0.42' d='M18 36c-7.2 0-13-5.4-13-12.2C5 17.2 10.6 12 18 12c2-7 9-12 16.5-12C43.2 0 51 6.2 52.4 15.2 59 16 65 21.4 65 28.6 65 35.6 59 42 51 42H18z'/%3E%3C/svg%3E");
+  --xfzh-sticker-composer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath fill='%23D96B8A' d='M8 .8l1.05 5.05L14.1 6.9 9.05 7.95 8 13.2 6.95 7.95 1.9 6.9l5.05-1.05z'/%3E%3Cpath fill='%23F2A7B8' d='M12.6 1.4l.4 1.9 1.9.4-1.9.4-.4 1.9-.4-1.9-1.9-.4 1.9-.4z'/%3E%3C/svg%3E");
+  --xfzh-sticker-modal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath fill='%23C45676' d='M1.5 2.5h13v3.2H9.2L8 7.2 6.8 5.7H1.5z'/%3E%3Cpath fill='%23D96B8A' d='M6.8 5.7L8 7.2l1.2-1.5v8.3H6.8z'/%3E%3C/svg%3E");
+  --xfzh-sticker-bubble: none;
+}
+
+body[data-ds-dark-theme] {
+  --xfzh-bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' fill='none'%3E%3Ccircle cx='50' cy='20' r='120' fill='%235C404E' fill-opacity='0.5'/%3E%3Ccircle cx='360' cy='50' r='130' fill='%23C45676' fill-opacity='0.12'/%3E%3Ccircle cx='200' cy='300' r='110' fill='%231F181E' fill-opacity='0.45'/%3E%3C/svg%3E");
+  --xfzh-sticker-app: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cg fill='%23F2A7B8' fill-opacity='0.28'%3E%3Cellipse cx='32' cy='14' rx='8' ry='11'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(72 32 32)'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(144 32 32)'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(216 32 32)'/%3E%3Cellipse cx='32' cy='14' rx='8' ry='11' transform='rotate(288 32 32)'/%3E%3Ccircle cx='32' cy='32' r='5'/%3E%3C/g%3E%3C/svg%3E");
+  --xfzh-sticker-sidebar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 48' fill='none'%3E%3Cpath fill='%23F2A7B8' fill-opacity='0.22' d='M18 36c-7.2 0-13-5.4-13-12.2C5 17.2 10.6 12 18 12c2-7 9-12 16.5-12C43.2 0 51 6.2 52.4 15.2 59 16 65 21.4 65 28.6 65 35.6 59 42 51 42H18z'/%3E%3C/svg%3E");
+}
+
+@supports (corner-shape: superellipse(1.5)) {
+  :root {
+    --dsw-corner-shape: superellipse(1.25);
+  }
+}
+
+html.xfzh-desktop {
+  --xfzh-window-controls-width: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw));
+}
+
+html.xfzh-desktop [data-conversation-header],
+html.xfzh-desktop [data-sidebar-logo-row] {
+  -webkit-app-region: drag;
+}
+
+html.xfzh-desktop [data-conversation-header] {
+  padding-top: 0;
+  padding-right: calc(28px + var(--xfzh-window-controls-width, 0px));
+}
+
+html.xfzh-desktop [data-conversation-header-title] {
+  min-height: env(titlebar-area-height, 44px);
+}
+
+html.xfzh-desktop [data-conversation-root][data-phase='hero']::before,
+html.xfzh-desktop [data-conversation-root][data-phase='settling']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  height: env(titlebar-area-height, 44px);
+  -webkit-app-region: drag;
+}
+
+/*
+ * The right panel is flush with the window's right edge, so its 36px dock
+ * strip sits under Chromium's titleBarOverlay. Inset the strip by the overlay
+ * width and match its height so collapse, fullscreen, and tab-close stay in
+ * the interactive titlebar area rather than under − □ ×.
+ */
+html.xfzh-desktop [data-sidebar-right-panel] [data-dockkit-strip]:has([data-dockkit-strip-chrome]) {
+  height: env(titlebar-area-height, 44px);
+  padding-right: calc(6px + var(--xfzh-window-controls-width, 0px));
+  -webkit-app-region: drag;
+}
+
+html.xfzh-desktop button,
+html.xfzh-desktop a,
+html.xfzh-desktop input,
+html.xfzh-desktop textarea,
+html.xfzh-desktop select,
+html.xfzh-desktop [role="button"],
+html.xfzh-desktop [data-dockkit-tab],
+html.xfzh-desktop [data-dockkit-strip-chrome] {
+  -webkit-app-region: no-drag;
+}
+
+/*
+ * Caption drag is a window-level hit test, not a CSS stacking context. A
+ * centered dialog's close control sits in the 44px titlebar band; the mask
+ * below that band still receives clicks, but Chromium treats the close as a
+ * window drag. no-drag on the button does not punch a hole in a drag ancestor
+ * it does not live under — so while a modal is open, drop the caption drag.
+ */
+html.xfzh-desktop [role="dialog"],
+html.xfzh-desktop [role="alertdialog"],
+html.xfzh-desktop [role="menu"],
+html.xfzh-desktop [role="listbox"],
+html.xfzh-desktop [role="presentation"]:has([role="dialog"]) {
+  -webkit-app-region: no-drag;
+}
+
+html.xfzh-desktop:has([aria-modal="true"]) [data-conversation-header],
+html.xfzh-desktop:has([aria-modal="true"]) [data-sidebar-logo-row],
+html.xfzh-desktop:has([aria-modal="true"]) [data-conversation-root][data-phase='hero']::before,
+html.xfzh-desktop:has([aria-modal="true"]) [data-conversation-root][data-phase='settling']::before,
+html.xfzh-desktop:has([aria-modal="true"]) [data-sidebar-right-panel] [data-dockkit-strip] {
+  -webkit-app-region: no-drag;
+}

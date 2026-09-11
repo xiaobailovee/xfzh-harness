@@ -14,9 +14,6 @@
     - button "Review deepseek-harness/deepseek-harness#314" [disabled]
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
   - button "Open the sidebar":
     - img
   - tablist:

@@ -3,9 +3,6 @@
     - button "workspace" [disabled]
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
   - button "Open the sidebar":
     - img
   - tablist:

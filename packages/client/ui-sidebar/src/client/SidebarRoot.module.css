@@ -13,7 +13,11 @@
   height: 100%;
   padding: 6px var(--dsh-sidebar-inline-padding);
   box-sizing: border-box;
-  background: var(--dsw-specific-sidebar-fill);
+  background-color: var(--dsw-specific-sidebar-fill);
+  background-image: var(--xfzh-sticker-sidebar, none);
+  background-repeat: no-repeat;
+  background-position: right 8px bottom 48px;
+  background-size: 72px 48px;
   color: var(--dsw-alias-label-primary);
   font-size: 14px;
   /* The sidebar is elevated above the conversation surface, so a revealed
@@ -257,7 +261,7 @@
   margin: 0 2px 8px;
   box-sizing: border-box;
   border: 0.5px solid var(--dsw-alias-border-l3);
-  border-radius: 12px;
+  border-radius: var(--dsw-radius-md, 12px);
   background: var(--dsw-alias-button-elevated-fill);
   color: var(--dsw-alias-label-primary);
   font-size: 14px;

@@ -1,9 +1,6 @@
 - banner:
   - navigation "Session hierarchy":
     - button "Inline code links" [disabled]
-  - button "Session log":
-    - text: Session log
-    - img
   - button "Open the sidebar":
     - img
   - tablist:
