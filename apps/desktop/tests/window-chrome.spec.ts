@@ -11,8 +11,8 @@ describe('desktop custom caption', () => {
       frame: true,
       titleBarStyle: 'hidden',
       titleBarOverlay: {
-        color: '#FFECF0',
-        symbolColor: '#3D2C32',
+        color: '#F2ECE4',
+        symbolColor: '#45332B',
         height: 44,
       },
       autoHideMenuBar: !applicationMenuBarVisible(),
@@ -24,10 +24,10 @@ describe('desktop custom caption', () => {
 
   it('dims the overlay to the masked sidebar fill while a page mask is up', () => {
     expect(titleBarOverlayOptions(true)).toEqual({
-      color: '#C9B6BB',
-      symbolColor: '#3D2C32',
+      color: '#C1B8B0',
+      symbolColor: '#45332B',
       height: 44,
     })
-    expect(titleBarOverlayOptions(false).color).toBe('#FFECF0')
+    expect(titleBarOverlayOptions(false).color).toBe('#F2ECE4')
   })
 })

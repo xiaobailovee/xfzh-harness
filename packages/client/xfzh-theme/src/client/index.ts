@@ -1,6 +1,6 @@
 /**
- * Always-on sakura-letter / dusk-room overlay: token layer, sticker sheet,
- * and xfzh brand occupants.
+ * Always-on cozy-cat / night-latte overlay: token layer, cafe wallpaper,
+ * sticker sheet, and xfzh brand occupants.
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -8,6 +8,9 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
 import { XfzhMark, XfzhName } from './Brand.tsx'
+import { XfzhHeadline } from './Greeting.tsx'
+import { installXfzhEffects } from './effects.ts'
+import { installXfzhStage } from './stage.ts'
 import { installXfzhStyles } from './styles.ts'
 import { XFZH_TOKENS } from './tokens.ts'
 
@@ -72,15 +75,19 @@ export function apply(ctx: ClientContext): void {
     'xfzh-theme: token overlay',
   )
   installXfzhStyles(ctx)
+  installXfzhEffects(ctx)
+  installXfzhStage(ctx)
   installDesktopCaptionClass(ctx)
   installDesktopCaptionMask(ctx)
   ctx.slots.inject('sidebar.brand.mark', () =>
     ctx.slots.inject('sidebar.brand.name', () =>
-      ctx.slots.inject('conversation.hero.brand.mark', function* () {
-        yield ctx.slots.register({ name: 'sidebar.brand.mark' }, XfzhMark)
-        yield ctx.slots.register({ name: 'sidebar.brand.name' }, XfzhName)
-        yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, XfzhMark)
-      })))
+      ctx.slots.inject('conversation.hero.brand.mark', () =>
+        ctx.slots.inject('conversation.hero.headline', function* () {
+          yield ctx.slots.register({ name: 'sidebar.brand.mark' }, XfzhMark)
+          yield ctx.slots.register({ name: 'sidebar.brand.name' }, XfzhName)
+          yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, XfzhMark)
+          yield ctx.slots.register({ name: 'conversation.hero.headline' }, XfzhHeadline)
+        }))))
 }
 
 declare global {

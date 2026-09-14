@@ -2,21 +2,21 @@
 
 export const TITLE_BAR_OVERLAY_HEIGHT = 44
 
-/** Idle overlay: the sakura sidebar fill, matching the conversation header. */
+/** Idle overlay: the latte sidebar fill, matching the conversation header. */
 export const TITLE_BAR_OVERLAY_IDLE = {
-  color: '#FFECF0',
-  symbolColor: '#3D2C32',
+  color: '#F2ECE4',
+  symbolColor: '#45332B',
   height: TITLE_BAR_OVERLAY_HEIGHT,
 } as const
 
 /**
  * Overlay while a page mask is up. Chromium paints the controls above the
- * web view, so the CSS mask never tints them; this is `#FFECF0` composited
- * with the light mask `rgba(61, 44, 50, 0.28)`.
+ * web view, so the CSS mask never tints them; this is `#F2ECE4` composited
+ * with the light mask `rgba(69, 51, 43, 0.28)`.
  */
 export const TITLE_BAR_OVERLAY_MASKED = {
-  color: '#C9B6BB',
-  symbolColor: '#3D2C32',
+  color: '#C1B8B0',
+  symbolColor: '#45332B',
   height: TITLE_BAR_OVERLAY_HEIGHT,
 } as const
 

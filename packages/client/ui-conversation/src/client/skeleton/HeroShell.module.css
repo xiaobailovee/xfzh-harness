@@ -57,9 +57,11 @@
   column-gap: 7px;
   row-gap: 4px;
   min-width: 0;
+  text-align: center;
 }
 
 .previewBadge {
+  position: relative;
   align-self: flex-start;
   margin-top: 2px;
   padding: 1px 7px 0;
@@ -72,6 +74,27 @@
   line-height: 18px;
   font-weight: 500;
   white-space: nowrap;
+  overflow: visible;
+}
+
+.previewBadge::before,
+.previewBadge::after {
+  content: var(--xfzh-sticker-ear, none);
+  position: absolute;
+  top: -7px;
+  width: 10px;
+  height: 10px;
+  background: var(--xfzh-sticker-ear-bg, none);
+  pointer-events: none;
+}
+
+.previewBadge::before {
+  left: 6px;
+}
+
+.previewBadge::after {
+  right: 6px;
+  transform: scaleX(-1);
 }
 
 /* Keep hover detection on a stationary box while the mark moves within it;

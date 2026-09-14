@@ -56,8 +56,12 @@
   position: absolute;
   left: 8px;
   top: 8px;
-  width: 14px;
-  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: var(--xfzh-sticker-modal-bg, no-repeat center / contain);
   pointer-events: none;
 }
 

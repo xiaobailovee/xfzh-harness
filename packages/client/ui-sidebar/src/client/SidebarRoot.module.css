@@ -17,7 +17,7 @@
   background-image: var(--xfzh-sticker-sidebar, none);
   background-repeat: no-repeat;
   background-position: right 8px bottom 48px;
-  background-size: 72px 48px;
+  background-size: 64px;
   color: var(--dsw-alias-label-primary);
   font-size: 14px;
   /* The sidebar is elevated above the conversation surface, so a revealed
@@ -251,24 +251,41 @@
 /* New Session: 38px bar, 12px radius (figma 133:7634 geometry, squared-off
    corners); collapsed it renders as the rail's plain icon control. */
 .newSession {
+  position: relative;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   height: 38px;
-  padding: 8px 16px;
+  padding: 8px var(--xfzh-new-session-pad-end, 16px) 8px 16px;
   margin: 0 2px 8px;
   box-sizing: border-box;
-  border: 0.5px solid var(--dsw-alias-border-l3);
+  border: 0.5px solid var(--xfzh-new-session-border, var(--dsw-alias-border-l3));
   border-radius: var(--dsw-radius-md, 12px);
-  background: var(--dsw-alias-button-elevated-fill);
+  background: var(--xfzh-new-session-fill, var(--dsw-alias-button-elevated-fill));
   color: var(--dsw-alias-label-primary);
   font-size: 14px;
   font-weight: 500;
   line-height: 22px;
   cursor: pointer;
   overflow: hidden;
+  transition: background-color 160ms ease;
+}
+
+.newSession::after {
+  content: var(--xfzh-sticker-new-session, none);
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  background: var(--xfzh-sticker-new-session-bg, no-repeat center / contain);
+  pointer-events: none;
 }
 
 .newSession:hover {
@@ -284,6 +301,10 @@
   gap: 0;
   border-color: transparent;
   background: transparent;
+}
+
+.collapsed .newSession::after {
+  content: none;
 }
 
 .collapsed .newSession:hover {

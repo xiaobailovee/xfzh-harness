@@ -75,9 +75,12 @@
   position: absolute;
   top: 10px;
   right: 14px;
-  width: 16px;
-  height: 16px;
-  background: no-repeat center / contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--xfzh-sticker-composer-bg, no-repeat center / contain);
   pointer-events: none;
   z-index: 1;
 }
@@ -307,7 +310,8 @@
   border: none;
   border-radius: 999px;
   corner-shape: round;
-  background: var(--dsw-specific-selector);
+  background: var(--xfzh-chip-fill, var(--dsw-specific-selector));
+  box-shadow: var(--xfzh-chip-shadow, none);
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
 }

@@ -8,7 +8,7 @@
   background-image: var(--xfzh-sticker-app, none), var(--xfzh-bg-image, none);
   background-repeat: no-repeat, no-repeat;
   background-position: right 24px bottom 72px, center top;
-  background-size: 168px, cover;
+  background-size: 96px, cover;
 
   /* Shared width axis for the whole column: one content width W
      (--dsh-chat-content-width) for the transcript, the dock cards
